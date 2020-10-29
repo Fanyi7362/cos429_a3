@@ -55,13 +55,17 @@ def train(model, input, label, params, numIters):
 
     lr_decay = params.get("lr_decay", .95)
     lr_decay_step = params.get("lr_decay_step", 10)
+    momentum_rho = params.get("momentum_rho", 0)
+
     early_stop_ratio = params.get("early_stop_ratio", 1e-5)
     save_step = params.get("save_step", 10)
 
     # update_params will be passed to your update_weights function.
     # This allows flexibility in case you want to implement extra features like momentum.
     update_params = {"learning_rate": lr,
-                     "weight_decay": wd }
+                     "weight_decay": wd,
+                     "momentum_rho": momentum_rho,
+                     "iter_n": 0}
 
     num_inputs = input.shape[-1]
     loss = np.zeros((numIters,))
@@ -92,6 +96,7 @@ def train(model, input, label, params, numIters):
 
         grads_ = calc_gradient(model, input_, activations_, dv_output_)
 
+        update_params['iter_n'] = i
         model = update_weights(model, grads_, update_params)
 
         if (i+1)%lr_decay_step == 0:
@@ -105,11 +110,11 @@ def train(model, input, label, params, numIters):
 
             if (i+1)==save_step: loss_ma_prev = loss_ma
             if i>=save_step:
-                if np.abs(loss_ma-loss_ma_prev)/(loss_ma_prev+1e-8) < early_stop_ratio:
+                if np.abs(loss_ma-loss_ma_prev)/(loss_ma_prev+1e-10) < early_stop_ratio:
                     print('Stop early')
                     break
                 loss_ma_prev = loss_ma
 
     np.savez(save_file, **model)
 
-    return model, loss
+    return model, loss, accuracy

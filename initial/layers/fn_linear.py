@@ -48,12 +48,9 @@ def fn_linear(input, params, hyper_params, backprop, dv_output=None):
 
         # TODO: BACKPROP CODE
         #       Update dv_input and grad with values
-        dy_dx = np.transpose(W) #num_in x num_out
-        dv_input = dy_dx @ dv_output
-
-        dy_dw = np.transpose(input)
-        grad['W'] = (dv_output @ dy_dw) / batch_size
-        grad['b'] = np.expand_dims(np.average(dv_output,axis=1), axis=1) 
+        dv_input = W.T @ dv_output
+        grad['W'] = dv_output @ input.T / batch_size
+        grad['b'] = np.sum(dv_output, axis=1).reshape(-1,1) / batch_size
 
 
     return output, dv_input, grad

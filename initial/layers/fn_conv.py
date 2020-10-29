@@ -41,7 +41,13 @@ def fn_conv(input, params, hyper_params, backprop, dv_output=None):
     #             output[:,:,j,i] += scipy.signal.convolve(input[:,:,k,i], params['W'][:,:,k,j], mode='valid') + params['b'][j]/num_channels
     for i in range(batch_size):
         for j in range(num_filters):
-            output[:,:,j,i] += scipy.signal.convolve(input[:,:,:,i], np.flip(params['W'][:,:,:,j]), mode='valid')[...,0] + params['b'][j]
+            output[:,:,j,i] = scipy.signal.convolve(input[:,:,:,i], np.flip(params['W'][:,:,:,j]), mode='valid')[...,0] + params['b'][j]
+    # for j in range(num_filters):
+    #     Wj_ = np.tile(np.expand_dims(params['W'][:,:,:,j], axis=-1), [1,batch_size])#[...,::-1]
+    #     # print(Wj_.shape)
+    #     output[:,:,j,:] = scipy.signal.convolve(input[:,:,:,:], Wj_, mode='valid')[...,0] + params['b'][j]
+    #     # print(output[:,:,j,:].shape)
+    # # print(output.shape)
 
 
     if backprop:
@@ -62,6 +68,9 @@ def fn_conv(input, params, hyper_params, backprop, dv_output=None):
                 for j in range(num_filters):
                     dv_input[:,:,k,i] += scipy.signal.convolve(dv_output[:,:,j,i], params['W'][:,:,k,j], mode='full')
                     grad['W'][:,:,k,j] += scipy.signal.convolve(input[:,:,k,i], np.flip(dv_output[:,:,j,i]), mode='valid')
+        # for i in range(batch_size):
+        #     for j in range(num_filters):
+        #         dv_input[:,:,:,i] += scipy.signal.convolve(np.tile(np.expand_dims(dv_output[:,:,j,i], axis=-1), [1,num_channels]), params['W'][:,:,:,j], mode='full')[:,:,5]
 
         grad['b'] = np.sum(dv_output, axis=(0,1,3)).reshape(-1,1) / batch_size
         grad['W'] = grad['W'] / batch_size
