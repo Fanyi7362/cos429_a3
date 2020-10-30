@@ -13,4 +13,4 @@ module purge
 module load anaconda3
 conda activate cos429
 
-python3 part2_lenet3.py
+srun python3 part2_lenet3.py
