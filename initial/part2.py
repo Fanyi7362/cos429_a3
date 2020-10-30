@@ -25,12 +25,12 @@ def train_model(model_name='model.npz', input_mean_name='input_mean.npy'):
     output_size = int(np.max(train_label) - np.min(train_label) + 1)
 
     batch_size = 1024
-    learning_rate = 0.005
-    weight_decay = 0.0005
+    learning_rate = 0.4
+    weight_decay = 0.0001
 
     lr_decay = 0.995
     lr_decay_step = 1
-    momentum_rho = 0.9
+    momentum_rho = 0.8
 
     early_stop_ratio = 1e-5
     save_step = 1
@@ -41,56 +41,48 @@ def train_model(model_name='model.npz', input_mean_name='input_mean.npy'):
     # index = np.random.choice(num_train, batch_size*temp, replace=False)  
     # train_data = train_data[..., index]; train_label = train_label[..., index]
 
-    layers = [init_layers('conv', {'filter_size': 3, 
+    layers = [init_layers('conv', {'filter_size': 5, 
                                    'filter_depth': num_channels, 
-                                   'num_filters': 8,
+                                   'num_filters': 6,
                                    'weight_scale': 1,
-                                   'bias_scale': 0,
-                                   }),
-              init_layers('relu', {}),
-
-              init_layers('conv', {'filter_size': 3, 
-                                   'filter_depth': 8, 
-                                   'num_filters': 8,
-                                   'weight_scale': 1,
-                                   'bias_scale': 0,
+                                   'bias_scale': 0.1,
                                    }),
               init_layers('relu', {}),
 
               init_layers('pool', {'filter_size': 2,
-                                   'stride': 2}),
+                                   'stride': 2}),              
 
-              # init_layers('conv', {'filter_size': 3, 
-              #                      'filter_depth': 16, 
-              #                      'num_filters': 8,
-              #                      # 'weight_scale': 0.4,
-              #                      # 'bias_scale': 0,
-              #                      }),
-              # init_layers('relu', {}),
-
-              init_layers('conv', {'filter_size': 3, 
-                                   'filter_depth': 8, 
-                                   'num_filters': 4,
+              init_layers('conv', {'filter_size': 5, 
+                                   'filter_depth': 6, 
+                                   'num_filters': 16,
                                    'weight_scale': 1,
-                                   'bias_scale': 0,
+                                   'bias_scale': 0.1,
                                    }),
               init_layers('relu', {}),
 
               init_layers('pool', {'filter_size': 2,
-                                   'stride': 2}),
+                                   'stride': 2}),              
 
               init_layers('flatten', {}),
 
-              # init_layers('linear', {'num_in': 5*5*4,
-              #                        'num_out': 32,
-              #                        # 'weight_scale': 0.0,
-              #                        # 'bias_scale': 0
-              #                        }),
-              # init_layers('relu', {}),
-
-              init_layers('linear', {'num_in': 5*5*4,
-                                     'num_out': output_size,
+              init_layers('linear', {'num_in': 4*4*16,
+                                     'num_out': 120,
                                      # 'weight_scale': 0.0,
+                                     # 'bias_scale': 0
+                                     }),
+              init_layers('relu', {}),
+
+              init_layers('linear', {'num_in': 120,
+                                     'num_out': 84,
+                                     'weight_scale': 1,
+                                     # 'bias_scale': 0
+                                     }),
+
+              init_layers('relu', {}),              
+
+              init_layers('linear', {'num_in': 84,
+                                     'num_out': output_size,
+                                     'weight_scale': 1,
                                      # 'bias_scale': 0
                                      }),
 

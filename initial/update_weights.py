@@ -32,11 +32,11 @@ def update_weights(model, grads, hyper_params):
                 layer['params']['W_m'] = np.zeros(grads[i]['W'].shape)
                 layer['params']['b_m'] = np.zeros(grads[i]['b'].shape)
 
-                layer['params']['W_m'] = grads[i]['W']
-                layer['params']['b_m'] = grads[i]['b']
+                layer['params']['W_m'] = np.copy(grads[i]['W'])
+                layer['params']['b_m'] = np.copy(grads[i]['b'])
             else:
-                layer['params']['W_m'] = rho*layer['params']['W_m'] + grads[i]['W']
-                layer['params']['b_m'] = rho*layer['params']['b_m'] + grads[i]['b']
+                layer['params']['W_m'] = rho*layer['params']['W_m'] + (1-rho)*grads[i]['W']
+                layer['params']['b_m'] = rho*layer['params']['b_m'] + (1-rho)*grads[i]['b']
 
             # layer['params']['W'] -= a * (grads[i]['W_m'] + 2*lmd*layer['params']['W'])
             layer['params']['W'] -= a * layer['params']['W_m'] + lmd*layer['params']['W']

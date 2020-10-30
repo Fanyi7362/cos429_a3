@@ -7,7 +7,7 @@ from fn_pool import fn_pool
 
 ######################################################
 # Set use_pcode to True to use the provided pyc code for layer functions
-use_pcode = False
+use_pcode = True
 
 # You can modify the imports of this section to indicate 
 # whether to use the provided pyc or your own code for each of the four functions.
@@ -49,14 +49,15 @@ def init_layers(type, info):
     if type == 'linear':
         # Requires num_in, num_out
         fn = fn_linear
-        W = weight_init(info['num_out'], info['num_in']) * ws
+        W = weight_init(info['num_out'], info['num_in'])/np.sqrt(info['num_in']) * ws
         b = weight_init(info['num_out'], 1) * bs
         params['W'] = W
         params['b'] = b
     elif type == 'conv':
         # Requires filter_size, filter_depth, num_filters
         fn = fn_conv
-        W = weight_init(info['filter_size'], info['filter_size'], info['filter_depth'], info['num_filters']) * ws
+        fan_in = info['filter_size']* info['filter_size']* info['filter_depth']
+        W = weight_init(info['filter_size'], info['filter_size'], info['filter_depth'], info['num_filters'])/np.sqrt(fan_in) * ws
         b = weight_init(info['num_filters'], 1) * bs
         params['W'] = W
         params['b'] = b

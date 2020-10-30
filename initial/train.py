@@ -108,12 +108,12 @@ def train(model, input, label, params, numIters):
             loss_ma, acc_ma = np.sum(loss[start_idx:])/save_step, np.sum(accuracy[start_idx:])/save_step
             print("iter={:d}, moving_avg_loss={:0.4f}, moving_avg_accuracy={:0.4f}".format(i+1, loss_ma, acc_ma))
 
-            if (i+1)==save_step: loss_ma_prev = loss_ma
-            if i>=save_step:
-                if np.abs(loss_ma-loss_ma_prev)/(loss_ma_prev+1e-10) < early_stop_ratio:
-                    print('Stop early')
-                    break
-                loss_ma_prev = loss_ma
+            # if (i+1)==save_step: loss_ma_prev = loss_ma
+            # if i>=save_step:
+            #     if np.abs(loss_ma-loss_ma_prev)/(loss_ma_prev+1e-10) < early_stop_ratio:
+            #         print('Stop early')
+            #         break
+            #     loss_ma_prev = loss_ma
 
     np.savez(save_file, **model)
 
