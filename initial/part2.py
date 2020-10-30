@@ -2,6 +2,7 @@ import sys
 sys.path += ['../data']
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
 from load_MNIST_images import load_MNIST_images
 from load_MNIST_labels import load_MNIST_labels
@@ -13,7 +14,7 @@ from inference import inference
 np.random.seed(0)
 
 
-def train_model(use_trained, model_name='model.npz', input_mean_name='input_mean.npy'):
+def train_model(use_trained, model_name='model.npz', input_mean_name='input_mean.npy', plots_suffix='_'):
     # Load training data
     train_data = load_MNIST_images('../data/train-images.idx3-ubyte')
     train_label = load_MNIST_labels('../data/train-labels.idx1-ubyte')
@@ -113,13 +114,36 @@ def train_model(use_trained, model_name='model.npz', input_mean_name='input_mean
     start = time.time()
     model, train_loss, train_accuracy, val_loss, val_accuracy = train(model, train_data, train_label, params, numIters)
     stop = time.time()
+    print("Done training, time used: {:0.1f} min".format((stop-start)/60))
 
     np.save('training_loss_file', train_loss)
     np.save('training_accuracy_file', train_accuracy)
     np.save('val_loss_file', val_loss)
     np.save('val_accuracy_file', val_accuracy)
-    print("Done training, time used: {:0.1f} min".format((stop-start)/60))
 
+    # plot learning and test(val) loss curve
+    train_iter_range = np.array(range(1, numIters+1))
+    val_iter_range = np.array(range(save_step, numIters+1, save_step))
+
+    fig, ax = plt.subplots()
+    ax.plot(train_iter_range, train_loss, 'b', label='training')
+    ax.plot(val_iter_range, val_loss, 'r', label='testing')
+    plt.xlabel('iteration')
+    plt.ylabel('loss')
+    legend = ax.legend(loc='upper right', shadow=True)
+    plt.title('training and testing losses VS number of iterations')
+    # plt.show()
+    plt.savefig('plot_losses' + plots_suffix + '.png')
+
+    fig, ax = plt.subplots()
+    ax.plot(train_iter_range, train_accuracy, 'b', label='training')
+    ax.plot(val_iter_range, val_accuracy, 'r', label='testing')
+    plt.xlabel('iteration')
+    plt.ylabel('accuracy')
+    legend = ax.legend(loc='upper left', shadow=True)
+    plt.title('training and testing accuracies VS number of iterations')
+    # plt.show()
+    plt.savefig('plot_accuracies' + plots_suffix + '.png')
 
 
 def test_model(model_name, input_mean_name):
@@ -127,8 +151,6 @@ def test_model(model_name, input_mean_name):
     # Load testing data
     test_data = load_MNIST_images('../data/t10k-images.idx3-ubyte')
     test_label = load_MNIST_labels('../data/t10k-labels.idx1-ubyte')
-    # index = np.random.choice(100, batch_size*temp, replace=False)  
-    # test_data = test_data[..., index]; test_label = test_label[..., index]
     num_test = test_data.shape[-1]
 
     model = np.load(model_name, allow_pickle=True)
@@ -162,9 +184,11 @@ def main():
     input_mean_name = 'input_mean.npy'
 
     train = True
-    use_trained = True
+    use_trained = False
 
-    if train: train_model(use_trained, model_name, input_mean_name)
+    if train:
+      plots_suffix = '_'
+      train_model(use_trained, model_name, input_mean_name, plots_suffix)
 
     test_model(model_name, input_mean_name)
 
