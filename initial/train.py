@@ -67,9 +67,13 @@ def train(model, input, label, params, numIters):
                      "momentum_rho": momentum_rho,
                      "iter_n": 0}
 
+    val_data = np.load('val_data.npy')
+    val_label = np.load('val_label.npy')
+
     num_inputs = input.shape[-1]
-    loss = np.zeros((numIters,))
-    accuracy = np.zeros((numIters,))
+    train_loss = np.zeros((numIters,))
+    train_accuracy = np.zeros((numIters,))
+    val_loss, val_accuracy = [], []
 
     for i in range(numIters):
         # TODO: One training iteration
@@ -89,10 +93,10 @@ def train(model, input, label, params, numIters):
 
         output_, activations_ = inference(model, input_)
         prediction_ = np.argmax(output_, axis=0)
-        accuracy[i] = np.sum(prediction_==label_) / batch_size
+        train_accuracy[i] = np.sum(prediction_==label_) / batch_size
 
-        loss_, dv_output_ = loss_crossentropy(output_, label_, {}, True)
-        loss[i] = loss_
+        train_loss_, dv_output_ = loss_crossentropy(output_, label_, {}, True)
+        train_loss[i] = train_loss_
 
         grads_ = calc_gradient(model, input_, activations_, dv_output_)
 
@@ -104,9 +108,21 @@ def train(model, input, label, params, numIters):
 
         if (i+1)%save_step == 0:
             np.savez(save_file, **model)
+
             start_idx = i + 1 - save_step
-            loss_ma, acc_ma = np.sum(loss[start_idx:])/save_step, np.sum(accuracy[start_idx:])/save_step
-            print("iter={:d}, moving_avg_loss={:0.4f}, moving_avg_accuracy={:0.4f}".format(i+1, loss_ma, acc_ma))
+            train_loss_ma = np.sum(train_loss[start_idx:])/save_step
+            train_acc_ma = np.sum(train_accuracy[start_idx:])/save_step
+
+            # validation test
+            val_output_, _ = inference(model, val_data)
+            val_prediction_ = np.argmax(val_output_, axis=0)
+            val_accuracy_ = np.sum(val_prediction_==val_label) / val_label.shape[-1]
+            val_loss_, _ = loss_crossentropy(val_output_, val_label, {}, False)
+            val_accuracy.append(val_accuracy_)
+            val_loss.append(val_loss_)
+
+            print("iter={:d}, mavg_loss={:0.4f}, mavg_train_acc={:0.4f}, val_loss={:0.4f}, val_acc={:0.4f}"
+                .format(i+1, train_loss_ma, train_acc_ma, val_loss_, val_accuracy_))
 
             # if (i+1)==save_step: loss_ma_prev = loss_ma
             # if i>=save_step:
@@ -117,4 +133,4 @@ def train(model, input, label, params, numIters):
 
     np.savez(save_file, **model)
 
-    return model, loss, accuracy
+    return model, train_loss, train_accuracy, np.array(val_loss), np.array(val_accuracy)
