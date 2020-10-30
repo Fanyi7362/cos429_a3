@@ -51,7 +51,9 @@ def train(model, input, label, params, numIters):
     # There is a good chance you will want to save your network model during/after
     # training. It is up to you where you save and how often you choose to back up
     # your model. By default the code saves the model in 'model.npz'.
-    save_file = params.get("save_file", 'model.npz')
+    save_folder = params.get("output_folder", './out_lenet5/')
+    filename = params.get("save_file", 'model.npz')
+    save_file = save_folder+filename
 
     lr_decay = params.get("lr_decay", .95)
     lr_decay_step = params.get("lr_decay_step", 10)
@@ -67,8 +69,8 @@ def train(model, input, label, params, numIters):
                      "momentum_rho": momentum_rho,
                      "iter_n": 0}
 
-    val_data = np.load('val_data.npy')
-    val_label = np.load('val_label.npy')
+    val_data = np.load(save_folder+'val_data.npy')
+    val_label = np.load(save_folder+'val_label.npy')
 
     num_inputs = input.shape[-1]
     train_loss = np.zeros((numIters,))

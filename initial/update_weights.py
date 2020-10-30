@@ -28,6 +28,7 @@ def update_weights(model, grads, hyper_params):
             # assert grads[i]['W'].shape == layer['params']['W'].shape
             # assert grads[i]['b'].shape == layer['params']['b'].shape
 
+            # momentum implemented, calculating velocity
             if iter_n==0:
                 layer['params']['W_m'] = np.zeros(grads[i]['W'].shape)
                 layer['params']['b_m'] = np.zeros(grads[i]['b'].shape)
